@@ -1,0 +1,164 @@
+CREATE TABLE `pp_user` (
+  `user_id` varchar(255) NOT NULL UNIQUE,
+ `user_name` varchar(255) NOT NULL,
+  `user_pwd` varchar(255) NOT NULL,
+  `user_type` varchar(255) ,
+  `register_time` datetime NOT NULL,
+ `remove_time` datetime NOT NULL,
+
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_rider` (
+  `rider_id` int(10) NOT NULL AUTO_INCREMENT,
+  `register_time` datetime NOT NULL,
+ `rider_name` varchar(255) NOT NULL,
+ `rider_sex` varchar(10) NOT NULL,
+`rider_age` int(10) NOT NULL,
+`rider_status` varchar(255) NOT NULL,
+  PRIMARY KEY (`rider_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_consumer` (
+  `csmr_id` int(10) NOT NULL AUTO_INCREMENT,
+  `register_time` datetime NOT NULL,
+ `csmr_name` varchar(255) NOT NULL,
+`csmr_sex` varchar(255) NOT NULL,
+`csmr_account` varchar(255) NOT NULL UNIQUE,
+`csmr_pwd` varchar(255) NOT NULL,
+`csmr_phone` varchar(255) NOT NULL,
+`ifvip` Boolean NOT NULL,
+`vipddl` datetime,
+  PRIMARY KEY (`csmr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_address` (
+  `adr_id` int(10) NOT NULL AUTO_INCREMENT,
+ `csmr_id` int(10) NOT NULL ,
+ `adr_pro` varchar(255) NOT NULL,
+`adr_city` varchar(255) NOT NULL,
+`adr_area` varchar(255) NOT NULL,
+`adr_moreinfo` varchar(255) NOT NULL,
+`communicate` varchar(255) NOT NULL,
+`phone` varchar(255) NOT NULL,
+  PRIMARY KEY (`adr_id`),
+foreign key(csmr_id) references pp_consumer(csmr_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_business` (
+  `bsn_id` int(10) NOT NULL AUTO_INCREMENT,
+ `bsn_name` varchar(255) NOT NULL,
+`bsn_star` int(10) DEFAULT '0',
+`bsn_avgcost` float(20) ,
+`bsn_sumsell` int(20) DEFAULT '0' NOT NULL,
+  PRIMARY KEY (`bsn_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_business_coupon` (
+`bsn_id` int(10) NOT NULL,
+  `cpn_id` int(10) NOT NULL AUTO_INCREMENT,
+ `cpn_reduce` float(10) NOT NULL,
+`cpn_needtimes` int(10) NOT NULL ,
+`begin_time` datetime NOT NULL,
+`dead_time` datetime ,
+  PRIMARY KEY (`cpn_id`),
+foreign key(bsn_id) references pp_business(bsn_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_business_scheme` (
+`bsn_id` int(10) NOT NULL,
+  `sch_id` int(10) NOT NULL AUTO_INCREMENT,
+ `sch_need` float(20) NOT NULL,
+`sch_reduce` float(20) NOT NULL ,
+`ifcanusecpn` Boolean NOT NULL,
+  PRIMARY KEY (`sch_id`),
+foreign key(bsn_id) references pp_business(bsn_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_product_types` (
+`bsn_id` int(10) NOT NULL,
+  `tpe_id` int(10) NOT NULL AUTO_INCREMENT,
+ `tpe_name` varchar(30) NOT NULL,
+`tpe_num` int(10) NOT NULL,
+ `tpe_content` varchar(30) ,
+  PRIMARY KEY (`tpe_id`),
+foreign key(bsn_id) references pp_business(bsn_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_product` (
+  `pro_id` int(10) NOT NULL AUTO_INCREMENT,
+ `tpe_id` int(10) NOT NULL,
+`pro_name` varchar(20) NOT NULL ,
+`pro_price` float(20) NOT NULL,
+`pro_vipprice` float(20) NOT NULL,
+`pro_num` int(10) NOT NULL ,
+  PRIMARY KEY (`pro_id`),
+foreign key(tpe_id) references pp_product_types(tpe_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_appraise` (
+ `apr_id` int(10) NOT NULL AUTO_INCREMENT,
+`pro_id` int(10) NOT NULL ,
+`csmr_id` int(10) NOT NULL ,
+`apr_content` varchar(30)  ,
+`apr_date` datetime NOT NULL,
+`apr_star` int(10) NOT NULL ,
+  PRIMARY KEY (`apr_id`),
+foreign key(pro_id) references pp_product(pro_id),
+foreign key(csmr_id) references pp_consumer(csmr_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_consumer_coupon` (
+`csmr_id` int(10) NOT NULL ,
+`cpn_id` int(10) NOT NULL ,
+`bsn_id` int(10) NOT NULL ,  
+`cpn_num` int(10) NOT NULL ,
+`already_times` int(10) NOT NULL ,
+foreign key(bsn_id) references pp_business(bsn_id),
+foreign key(cpn_id) references pp_business_coupon(cpn_id),
+foreign key(csmr_id) references pp_consumer(csmr_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_order` (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+`bsn_id` int(10) NOT NULL ,  
+`csmr_id` int(10) NOT NULL ,
+`rider_id` int(10)  ,
+`ori_price` float(20) NOT NULL ,
+`fin_price` float(20) NOT NULL ,
+`sch_id` int(10) ,
+`cpn_id` int(10) ,
+  `create_time` datetime NOT NULL,
+  `order_time` datetime ,
+`adr_id` int(10) NOT NULL ,
+`order_status` varchar(30) NOT NULL ,
+  PRIMARY KEY (`order_id`),
+foreign key(bsn_id) references pp_business(bsn_id),
+foreign key(rider_id) references pp_rider(rider_id),
+foreign key(adr_id) references pp_address(adr_id),
+foreign key(cpn_id) references pp_business_coupon(cpn_id),
+foreign key(sch_id) references pp_business_scheme(sch_id),
+foreign key(csmr_id) references pp_consumer(csmr_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_order_moreInfo` (
+  `order_id` int(11) NOT NULL ,
+`pro_id` int(10) NOT NULL ,  
+`pro_num` int(10) NOT NULL ,
+`price` float(20) NOT NULL ,
+foreign key(order_id) references pp_order(order_id),
+foreign key(pro_id) references pp_product(pro_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `pp_rider_income` (
+  `order_id` int(11) NOT NULL,
+`rider_id` int(10)  NOT NULL,
+`time` datetime NOT NULL ,
+`appraise` varchar(20) ,
+`thisIncome` float(20) NOT NULL,
+foreign key(order_id) references pp_order(order_id),
+foreign key(rider_id) references pp_rider(rider_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
